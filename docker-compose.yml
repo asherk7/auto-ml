@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  automl:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./experiments:/app/experiments
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - WANDB_PROJECT=automl-docker
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    command: ["python", "main.py", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a simple web interface (could be added later)
+  # web:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./web:/usr/share/nginx/html
+  #   depends_on:
+  #     - automl
+
+volumes:
+  automl_data:
+  automl_models:
+  automl_experiments:
