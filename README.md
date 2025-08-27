@@ -441,4 +441,11 @@ For issues and questions:
 
 ---
 
-**Note**: This is an educational AutoML system focused on simplicity and modularity. For production use cases, consider additional features like advanced security, scalability, and robustness measures.
+future improvements:  
+Redis, celery
+Fine tuning large pretrained models with qlora and peft
+Hyperparameter tuning with optuna
+Adding a gradcam for CNN, adjusted gradcam for transformers, SHAP/LIME for tabular and NLP
+Ensembling
+Real-time analysis (latency/inference)
+Include interactive model creation with pytorch (allow user to choose from layers available, set hyperparameters, etc)
