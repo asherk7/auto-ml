@@ -1,8 +1,3 @@
-"""
-Example script for CIFAR-10 image classification using the AutoML system.
-This demonstrates how to train a computer vision model on the CIFAR-10 dataset.
-"""
-
 import sys
 from pathlib import Path
 
@@ -15,18 +10,13 @@ from models.cv_models import CVModelFactory
 from utils.helpers import setup_logging
 
 def main():
-    """Run CIFAR-10 classification example"""
-
-    # Setup logging
     logger = setup_logging()
     logger.info("Starting CIFAR-10 classification example")
 
     try:
-        # Load CIFAR-10 dataset
         logger.info("Loading CIFAR-10 dataset...")
         train_loader, val_loader, test_loader = data_ingestion.load_cifar10(download=True)
 
-        # CIFAR-10 has 10 classes
         num_classes = 10
         class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
                       'dog', 'frog', 'horse', 'ship', 'truck']
@@ -56,7 +46,6 @@ def main():
             max_epochs=10  # Reduced for quick example
         )
 
-        # Print results
         logger.info("Training completed!")
         logger.info(f"Experiment ID: {results['experiment_id']}")
         logger.info(f"Model ID: {results['model_id']}")
@@ -71,7 +60,6 @@ def main():
             else:
                 logger.info(f"  {metric_name}: {value}")
 
-        # Model file paths
         logger.info(f"Model saved to: {results['model_path']}")
         if results['onnx_path']:
             logger.info(f"ONNX model saved to: {results['onnx_path']}")
