@@ -1,8 +1,3 @@
-"""
-Tabular ML models using scikit-learn.
-Includes classification, regression, and clustering models.
-"""
-
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -27,7 +22,6 @@ from config import config
 
 logger = logging.getLogger(__name__)
 
-
 class TabularClassifier:
     """Wrapper class for tabular classification models"""
 
@@ -42,7 +36,6 @@ class TabularClassifier:
         logger.info(f"Initialized TabularClassifier with {model_type}")
 
     def _create_model(self, model_type: str, **kwargs):
-        """Create the underlying sklearn model"""
         models = {
             "random_forest": RandomForestClassifier(
                 n_estimators=kwargs.get("n_estimators", 100),
@@ -88,7 +81,6 @@ class TabularClassifier:
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
 
-        # Train model
         self.model.fit(X_scaled, y)
         self.is_fitted = True
 
@@ -107,7 +99,6 @@ class TabularClassifier:
         return metrics
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """Make predictions"""
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
 
@@ -126,7 +117,6 @@ class TabularClassifier:
         return self.model.predict_proba(X_scaled)
 
     def evaluate(self, X: np.ndarray, y: np.ndarray) -> Dict[str, float]:
-        """Evaluate model performance"""
         y_pred = self.predict(X)
 
         metrics = {
@@ -164,7 +154,6 @@ class TabularClassifier:
             return dict(zip(self.feature_names, importance))
 
         return None
-
 
 class TabularRegressor:
     """Wrapper class for tabular regression models"""
@@ -216,7 +205,6 @@ class TabularRegressor:
         return models[model_type]
 
     def fit(self, X: np.ndarray, y: np.ndarray, feature_names: List[str] = None) -> Dict[str, float]:
-        """Fit the model and return training metrics"""
         logger.info(f"Training {self.model_type} regressor...")
 
         # Store metadata
@@ -225,11 +213,9 @@ class TabularRegressor:
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
 
-        # Train model
         self.model.fit(X_scaled, y)
         self.is_fitted = True
 
-        # Calculate training metrics
         y_pred = self.model.predict(X_scaled)
 
         metrics = {
@@ -243,7 +229,6 @@ class TabularRegressor:
         return metrics
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """Make predictions"""
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
 
@@ -251,7 +236,6 @@ class TabularRegressor:
         return self.model.predict(X_scaled)
 
     def evaluate(self, X: np.ndarray, y: np.ndarray) -> Dict[str, float]:
-        """Evaluate model performance"""
         y_pred = self.predict(X)
 
         metrics = {
@@ -291,8 +275,6 @@ class TabularRegressor:
 
 
 class TabularClusterer:
-    """Wrapper class for tabular clustering models"""
-
     def __init__(self, model_type: str = "kmeans", **kwargs):
         self.model_type = model_type
         self.model = self._create_model(model_type, **kwargs)
@@ -304,7 +286,6 @@ class TabularClusterer:
         logger.info(f"Initialized TabularClusterer with {model_type}")
 
     def _create_model(self, model_type: str, **kwargs):
-        """Create the underlying sklearn model"""
         models = {
             "kmeans": KMeans(
                 n_clusters=kwargs.get("n_clusters", 3),
@@ -327,7 +308,6 @@ class TabularClusterer:
         return models[model_type]
 
     def fit(self, X: np.ndarray, feature_names: List[str] = None) -> Dict[str, float]:
-        """Fit the clustering model and return metrics"""
         logger.info(f"Training {self.model_type} clusterer...")
 
         # Store metadata
@@ -336,7 +316,6 @@ class TabularClusterer:
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
 
-        # Fit model
         self.model.fit(X_scaled)
         self.labels_ = self.model.labels_
         self.is_fitted = True
@@ -372,7 +351,6 @@ class TabularClusterer:
             return self.labels_
 
     def fit_predict(self, X: np.ndarray, feature_names: List[str] = None) -> Tuple[np.ndarray, Dict[str, float]]:
-        """Fit model and return cluster labels and metrics"""
         metrics = self.fit(X, feature_names)
         return self.labels_, metrics
 
@@ -387,7 +365,7 @@ class TabularClusterer:
 
 
 class TabularModelFactory:
-    """Factory class for creating tabular ML models"""
+    """Base class for creating tabular ML models"""
 
     @staticmethod
     def create_model(task_type: str, model_type: str = None, **kwargs):
@@ -410,7 +388,6 @@ class TabularModelFactory:
 
     @staticmethod
     def get_available_models() -> Dict[str, List[str]]:
-        """Get available models for each task type"""
         return {
             "classification": [
                 "random_forest", "logistic_regression", "decision_tree",
@@ -427,7 +404,6 @@ class TabularModelFactory:
 
     @staticmethod
     def get_model_info(model_name: str) -> Dict[str, Any]:
-        """Get information about a specific model"""
         model_info = {
             # Classification models
             "random_forest": {
