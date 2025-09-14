@@ -5,8 +5,11 @@ Includes logging, visualization, model evaluation, and file handling utilities.
 
 import os
 import json
+import re
 import logging
 import pickle
+import platform
+import psutil
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union, Tuple
@@ -420,7 +423,6 @@ def estimate_training_time(n_samples: int, n_features: int,
 
 def clean_experiment_name(name: str) -> str:
     """Clean experiment name for file system compatibility"""
-    import re
 
     # Remove invalid characters
     cleaned = re.sub(r'[<>:"/\\|?*]', '_', name)
@@ -441,9 +443,6 @@ def clean_experiment_name(name: str) -> str:
 
 def get_system_info() -> Dict[str, Any]:
     """Get system information for debugging"""
-    import platform
-    import psutil
-
     try:
         system_info = {
             "platform": platform.platform(),

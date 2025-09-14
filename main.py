@@ -1,15 +1,10 @@
-"""
-Main entry point for the AutoML system.
-Provides command-line interface for training models, running experiments, and serving APIs.
-"""
-
 import argparse
 import sys
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+import uvicorn
 
-# Add project root to path
 sys.path.append(str(Path(__file__).parent))
 
 from config import config, TASK_TYPES
@@ -18,34 +13,27 @@ from training.trainer import AutoMLTrainer, CVTrainer, TabularTrainer
 from serving.api import app
 from utils.helpers import setup_logging, get_system_info
 from utils.database import db
+from models.cv_models import CVModelFactory
 
 logger = setup_logging()
 
-
 def train_cv_command(args):
-    """Handle computer vision training command"""
     logger.info("Starting computer vision training...")
 
     try:
-        # Load data
         if args.dataset_path:
             train_loader, val_loader, test_loader = data_ingestion.load_custom_image_dataset(
                 args.dataset_path, args.task_type
             )
         else:
-            # Use CIFAR-10 as default
             train_loader, val_loader, test_loader = data_ingestion.load_cifar10()
 
-        # Get number of classes
         if hasattr(train_loader.dataset, 'classes'):
             num_classes = len(train_loader.dataset.classes)
         elif hasattr(train_loader.dataset, 'class_names'):
             num_classes = len(train_loader.dataset.class_names)
         else:
             num_classes = 10  # Default for CIFAR-10
-
-        # Create and train model
-        from models.cv_models import CVModelFactory
 
         model = CVModelFactory.create_model(
             task_type=args.task_type,
@@ -72,20 +60,16 @@ def train_cv_command(args):
 
 
 def train_tabular_command(args):
-    """Handle tabular ML training command"""
     logger.info("Starting tabular ML training...")
 
     try:
-        # Load data
         if args.dataset_path:
             X_train, X_val, X_test, y_train, y_val, y_test, target_names = data_ingestion.load_custom_tabular_dataset(
                 args.dataset_path, args.target_column, args.task_type
             )
         else:
-            # Use Iris as default
             X_train, X_val, X_test, y_train, y_val, y_test, target_names = data_ingestion.load_iris_dataset()
 
-        # Train model
         trainer = TabularTrainer(experiment_name=args.experiment_name)
         results = trainer.train(
             model_type=args.model_type,
@@ -141,8 +125,6 @@ def serve_command(args):
     logger.info("Starting API server...")
 
     try:
-        import uvicorn
-
         uvicorn.run(
             "serving.api:app",
             host=args.host,

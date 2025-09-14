@@ -1,8 +1,3 @@
-"""
-Training module with experiment tracking and model management.
-Handles training of both computer vision and tabular ML models.
-"""
-
 import os
 import time
 import logging
@@ -24,6 +19,7 @@ from models.cv_models import CVModelFactory
 from models.tabular_models import TabularModelFactory
 from utils.database import db
 from data.ingestion import data_ingestion
+from models.tabular_models import save_model
 
 logger = logging.getLogger(__name__)
 
@@ -46,16 +42,14 @@ class CVTrainer:
         # Create experiment record
         self.experiment_id = db.create_experiment(
             name=self.experiment_name,
-            task_type="cv_classification",  # Could be made dynamic
-            dataset_name="custom",  # Could be extracted from loader
+            task_type="cv_classification",
+            dataset_name="custom", 
             model_type=model.__class__.__name__,
             config_dict=self._get_config_dict()
         )
 
-        # Setup callbacks
+        # Setup callbacks and logger
         callbacks = self._setup_callbacks()
-
-        # Setup logger
         wandb_logger = self._setup_wandb_logger()
 
         # Create trainer
@@ -75,18 +69,13 @@ class CVTrainer:
         try:
             self.trainer.fit(model, train_loader, val_loader)
 
-            # Test model if test loader provided
             test_results = {}
             if test_loader:
                 test_results = self.trainer.test(model, test_loader)[0]
 
-            # Get best metrics
             best_metrics = self._extract_best_metrics()
 
-            # Save model
             model_path = self._save_model(model)
-
-            # Export to ONNX
             onnx_path = self._export_to_onnx(model, train_loader)
 
             # Update experiment
@@ -137,7 +126,6 @@ class CVTrainer:
         """Setup PyTorch Lightning callbacks"""
         callbacks = []
 
-        # Early stopping
         early_stopping = EarlyStopping(
             monitor=config.training.monitor,
             patience=config.training.early_stopping_patience,
@@ -196,7 +184,6 @@ class CVTrainer:
         return metrics
 
     def _save_model(self, model: pl.LightningModule) -> str:
-        """Save trained model"""
         model_dir = Path(config.serving.model_dir)
         model_dir.mkdir(parents=True, exist_ok=True)
 
@@ -207,7 +194,6 @@ class CVTrainer:
         return str(model_path)
 
     def _export_to_onnx(self, model: pl.LightningModule, train_loader) -> Optional[str]:
-        """Export model to ONNX format"""
         try:
             onnx_dir = Path(config.serving.onnx_dir)
             onnx_dir.mkdir(parents=True, exist_ok=True)
@@ -216,9 +202,8 @@ class CVTrainer:
 
             # Get sample input
             sample_batch = next(iter(train_loader))
-            sample_input = sample_batch[0][:1]  # Take first sample
+            sample_input = sample_batch[0][:1] # First sample
 
-            # Export to ONNX
             model.eval()
             torch.onnx.export(
                 model,
@@ -437,9 +422,6 @@ class TabularTrainer:
         return model
 
     def _save_model(self, model) -> str:
-        """Save trained model"""
-        from models.tabular_models import save_model
-
         model_dir = Path(config.serving.model_dir)
         model_dir.mkdir(parents=True, exist_ok=True)
 

@@ -1,8 +1,3 @@
-"""
-Configuration management for AutoML system.
-Contains all configurable parameters for data processing, training, and serving.
-"""
-
 import os
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -29,12 +24,10 @@ class DataConfig:
 @dataclass
 class ModelConfig:
     """Configuration for model architectures"""
-    # Computer Vision
     cv_backbone: str = "resnet18"  # Options: resnet18, resnet34, resnet50
     cv_pretrained: bool = True
     cv_num_classes: int = 10
 
-    # Tabular ML
     tabular_models: List[str] = None
 
     def __post_init__(self):
@@ -45,7 +38,6 @@ class ModelConfig:
 @dataclass
 class TrainingConfig:
     """Configuration for training process"""
-    # General
     max_epochs: int = 50
     early_stopping_patience: int = 7
     learning_rate: float = 1e-3
@@ -79,7 +71,6 @@ class ExperimentConfig:
 @dataclass
 class ServingConfig:
     """Configuration for model serving"""
-    # FastAPI
     host: str = "0.0.0.0"
     port: int = 8000
     reload: bool = False
@@ -89,7 +80,6 @@ class ServingConfig:
     onnx_dir: str = "models/onnx"
     max_batch_size: int = 32
 
-    # API settings
     api_title: str = "AutoML API"
     api_description: str = "AutoML system for computer vision and tabular ML tasks"
     api_version: str = "1.0.0"

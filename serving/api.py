@@ -1,8 +1,3 @@
-"""
-FastAPI serving module for model predictions.
-Provides REST API endpoints for computer vision and tabular ML models.
-"""
-
 import os
 import io
 import logging
@@ -11,6 +6,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 
 import torch
+import uvicorn 
+from torchvision import transforms 
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -28,14 +25,12 @@ from models.cv_models import CVModelFactory
 
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
 app = FastAPI(
     title=config.serving.api_title,
     description=config.serving.api_description,
     version=config.serving.api_version
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,10 +39,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global model cache
 model_cache = {}
 onnx_cache = {}
-
 
 # Pydantic models for request/response
 class PredictionRequest(BaseModel):
@@ -55,14 +48,12 @@ class PredictionRequest(BaseModel):
     data: Union[List[float], List[List[float]]]
     return_probabilities: bool = False
 
-
 class PredictionResponse(BaseModel):
     predictions: Union[List[int], List[float], List[str]]
     probabilities: Optional[List[List[float]]] = None
     confidence: Optional[List[float]] = None
     model_info: Dict[str, Any]
     timestamp: str
-
 
 class ModelInfo(BaseModel):
     id: int
@@ -72,13 +63,11 @@ class ModelInfo(BaseModel):
     metrics: Dict[str, Any]
     created_at: str
 
-
 class HealthResponse(BaseModel):
     status: str
     timestamp: str
     models_loaded: int
     database_status: str
-
 
 # Dependency functions
 def get_model_info(model_id: int) -> Dict[str, Any]:
@@ -95,11 +84,8 @@ def get_model_info(model_id: int) -> Dict[str, Any]:
 def load_cv_model(model_path: str, model_info: Dict[str, Any]) -> torch.nn.Module:
     """Load computer vision model"""
     try:
-        # Extract model details
         task_type = model_info['task_type'].replace('cv_', '')
 
-        # Create model architecture (you might need to store this info)
-        # For now, assume classification with 10 classes
         num_classes = 10  # This should be stored in model metadata
         model = CVModelFactory.create_model(task_type, num_classes)
 
@@ -126,7 +112,6 @@ def load_onnx_model(onnx_path: str) -> ort.InferenceSession:
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
     """Preprocess image for inference"""
-    from torchvision import transforms
 
     transform = transforms.Compose([
         transforms.Resize(config.data.image_size),
@@ -141,9 +126,7 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
 # API Routes
 @app.get("/", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint"""
     try:
-        # Check database connection
         summary = db.get_experiment_summary()
         db_status = "healthy"
     except Exception as e:
@@ -155,7 +138,6 @@ async def health_check():
         models_loaded=len(model_cache),
         database_status=db_status
     )
-
 
 @app.get("/models", response_model=List[ModelInfo])
 async def list_models(task_type: Optional[str] = None, limit: int = 10):
@@ -220,10 +202,8 @@ async def predict_tabular(request: PredictionRequest):
         if X.ndim == 1:
             X = X.reshape(1, -1)
 
-        # Make predictions
         predictions = model.predict(X)
 
-        # Get probabilities if available and requested
         probabilities = None
         confidence = None
 
@@ -492,8 +472,6 @@ async def startup_event():
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run(
         "api:app",
         host=config.serving.host,
