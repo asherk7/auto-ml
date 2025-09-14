@@ -1,8 +1,3 @@
-"""
-Computer Vision models using PyTorch Lightning.
-Includes image classification and object detection models.
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +11,6 @@ import numpy as np
 from config import config
 
 logger = logging.getLogger(__name__)
-
 
 class ImageClassifier(pl.LightningModule):
     """PyTorch Lightning module for image classification"""
@@ -202,7 +196,7 @@ class SimpleObjectDetector(pl.LightningModule):
         x, targets = batch
         predictions = self(x)
 
-        # Simplified loss - in practice, you'd use proper YOLO/FCOS loss
+        # Simplified loss, in practice, you'd use proper YOLO/FCOS loss
         loss = F.mse_loss(predictions, targets.float())
 
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
@@ -255,7 +249,7 @@ class SimpleObjectDetector(pl.LightningModule):
 
 
 class CVModelFactory:
-    """Factory class for creating computer vision models"""
+    """Base class for creating computer vision models"""
 
     @staticmethod
     def create_model(task_type: str, num_classes: int, **kwargs) -> pl.LightningModule:
