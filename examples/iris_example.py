@@ -1,13 +1,7 @@
-"""
-Example script for Iris classification using the AutoML system.
-This demonstrates how to train a tabular ML model on the Iris dataset.
-"""
-
 import sys
 from pathlib import Path
 import numpy as np
 
-# Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from data.ingestion import data_ingestion
@@ -18,12 +12,10 @@ from utils.helpers import setup_logging, create_classification_report
 def main():
     """Run Iris classification example"""
 
-    # Setup logging
     logger = setup_logging()
     logger.info("Starting Iris classification example")
 
     try:
-        # Load Iris dataset
         logger.info("Loading Iris dataset...")
         X_train, X_val, X_test, y_train, y_val, y_test, target_names = data_ingestion.load_iris_dataset()
 
@@ -61,7 +53,6 @@ def main():
 
             results[model_type] = result
 
-            # Print results for this model
             metrics = result['metrics']
             logger.info(f"Results for {model_type}:")
             logger.info(f"  Train accuracy: {metrics.get('train_accuracy', 'N/A'):.4f}")
@@ -97,10 +88,8 @@ def main():
             best_result = results[best_model]
             model = best_result['model']
 
-            # Make predictions on test set
             y_pred = model.predict(X_test)
 
-            # Generate classification report
             report = create_classification_report(y_test, y_pred, target_names)
 
             logger.info("Classification Report:")
